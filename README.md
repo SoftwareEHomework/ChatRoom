@@ -1,6 +1,6 @@
-# ChatRoom
-<<<<<<< HEAD
-智能聊天室测试1
-=======
-智能聊天室test
-level v1 >>>>> e3dee200abd2130cbefdc3bc3541fe45378c574e
+# ChatRoom智能聊天室
+开发环境：
+- Python 3.6
+- Pycharm社区版
+## 项目简述
+实现一个智能聊天室，包括注册账号，登录，添加好友，以及和机器人聊天等功能。
