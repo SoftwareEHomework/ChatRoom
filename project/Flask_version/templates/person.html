@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人主页</title>
+</head>
+<body>
+    <div align="center">
+        <h1>{{ name }}的个人空间</h1>
+    </div>
+    <div>
+        <div align="left">
+            <h1>好友列表</h1>
+            <ol><a href="http://127.0.0.1:5000/chatbot">点击可与机器人聊天</a></ol>
+            {% for i in my_friend %}
+                 <h3>{{i}}</h3>
+            {% endfor %}
+        </div>
+
+    </div>
+</body>
+</html>

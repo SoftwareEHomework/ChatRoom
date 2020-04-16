@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>聊天机器人</title>
+    <style>
+        h1
+        {
+            color : red;
+        }
+        #head
+        {
+            background-color : yellow;
+        }
+        #read
+        {
+            rows : 1000;
+            cols : 100;
+            height: 500px;
+            width: 100%;
+            background-color : yellow;
+            overflow : scroll;
+        }
+        #write
+        {
+            rows : 1000;
+            cols : 100;
+            height: 200px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="head" align="center">
+        <h1>欢迎来到智能聊天室和我一起聊天</h1>
+    </div>
+    <div align="center">
+        <textarea id="read" readonly="readonly">
+            机器人：你好，我是无敌的聊天机器人！我非常有才华，你想跟我说什么都可以，我最近学会了写小说，只要你回复小说，即可让我写小说。
+        </textarea>
+        <ol align="left">请输入：</ol>
+        <form method="POST">
+            <textarea id="write" name="input_text"></textarea>
+            <input type="submit" value="发送">
+        </form>
+    </div>
+</body>
+</html>

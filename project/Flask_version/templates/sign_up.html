@@ -8,16 +8,20 @@
     </style>
 </head>
 <body>
-    <h1>欢迎来到智能聊天室</h1>
-    <h2><a href="http://127.0.0.1:5000/login">登录</a></h2>
-    <form method="post">
-        <label>用户名：   </label><input type="text" name="username"><br>
-        <label>密码：     </label><input type="password" name = 'password'><br>
-        <label>确认密码：</label><input type="password" name="password2"><br>
-        <input type="submit" value="提交"><br>
-        {% for message in get_flashed_messages() %}
-            {{ message }}
-        {% endfor %}
-    </form>
+
+    <div align="center">
+        <h1>欢迎来到智能聊天室</h1>
+        <h2><a href="http://127.0.0.1:5000/login">登录</a></h2>
+        <form method="post">
+            <label>用户名：   </label><input type="text" name="username"><br>
+            <label>密码：     </label><input type="password" name = 'password'><br>
+            <label>确认密码：</label><input type="password" name="password2"><br>
+            <input type="submit" value="提交"><br>
+            {% for message in get_flashed_messages() %}
+                {{ message }}
+            {% endfor %}
+        </form>
+    </div>
+
 </body>
 </html>

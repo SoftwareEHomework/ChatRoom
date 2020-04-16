@@ -10,12 +10,17 @@
     </style>
 </head>
 <body>
-    <h1>智能聊天室登录界面</h1>
-    <h2><a href="http://127.0.0.1:5000/sign_up">注册</a></h2>
-    <form method="post">
-        <label>用户名：   </label><input type="text" name="username"><br>
-        <label>密码：     </label><input type="password" name = 'password'><br>
-        <input type="submit" value="提交"><br>
-    </form>
+    <div align="center">
+        <h1>智能聊天室登录界面</h1>
+        <h2><a href="http://127.0.0.1:5000/sign_up">注册</a></h2>
+        <form method="post">
+            <label>用户名：   </label><input type="text" name="username"><br>
+            <label>密码：     </label><input type="password" name = 'password'><br>
+            <input type="submit" value="提交"><br>
+            {% for message in get_flashed_messages() %}
+                {{ message }}
+            {% endfor %}
+        </form>
+    </div>
 </body>
 </html>
