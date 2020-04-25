@@ -138,6 +138,7 @@ def chatbot_ws(username):
 		if msg == "小说":
 			flag = True
 			user_socket.send("请随意输入一段话")
+			continue
 		elif msg == "q" and flag == True:
 			flag = False
 
