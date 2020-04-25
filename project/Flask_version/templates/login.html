@@ -16,7 +16,7 @@
         <form method="post">
             <label>用户名：   </label><input type="text" name="username"><br>
             <label>密码：     </label><input type="password" name = 'password'><br>
-            <input type="submit" value="提交"><br>
+            <input type="submit" value="提交" onclick="login()"><br>
             {% for message in get_flashed_messages() %}
                 {{ message }}
             {% endfor %}

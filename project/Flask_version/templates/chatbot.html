@@ -14,8 +14,6 @@
         }
         #read
         {
-            rows : 1000;
-            cols : 100;
             height: 500px;
             width: 100%;
             background-color : yellow;
@@ -32,17 +30,38 @@
 </head>
 <body>
     <div id="head" align="center">
-        <h1>欢迎来到智能聊天室和我一起聊天</h1>
+        <h1>{{ name }}你好，欢迎来到智能聊天室和我一起聊天</h1>
     </div>
+
     <div align="center">
-        <textarea id="read" readonly="readonly">
-            机器人：你好，我是无敌的聊天机器人！我非常有才华，你想跟我说什么都可以，我最近学会了写小说，只要你回复小说，即可让我写小说。
-        </textarea>
+        <div id="read" align="left" >
+            <p>机器人：你好，我是无敌的聊天机器人！我非常有才华，你想跟我说什么都可以，我最近学会了写小说，
+                只要你回复小说，即可让我写小说。回复q可以退出写小说的状态</p>
+        </div>
+
         <ol align="left">请输入：</ol>
-        <form method="POST">
-            <textarea id="write" name="input_text"></textarea>
-            <input type="submit" value="发送">
-        </form>
+        <textarea id="write" name="input_text"></textarea>
+        <button onclick="send_message()">发送</button>
+        <script type="application/javascript">
+            ws = new WebSocket("ws://127.0.0.1:5000/chatbot_ws/"+"{{ name }}");
+            ws.onmessage = function (data)
+            {
+                console.log(data.data);
+                var recv_msg = data.data;
+                var ptag1 = document.createElement("p");
+                ptag1.innerText = "{{ name }}" + ":" + document.getElementById("write").value;
+                document.getElementById("read").appendChild(ptag1);
+
+                var ptag2 = document.createElement("p");
+                ptag2.innerText = "机器人:" + recv_msg;
+                document.getElementById("read").appendChild(ptag2);
+            }
+            function send_message()
+            {
+                 var to_chatbot = document.getElementById("write").value;
+                 ws.send(to_chatbot);
+            }
+        </script>
     </div>
 </body>
 </html>
