@@ -5,18 +5,32 @@
     <title>个人主页</title>
 </head>
 <body>
-    <div align="center">
-        <h1>{{ name }}的个人空间</h1>
-    </div>
-    <div>
-        <div align="left">
-            <h1>好友列表</h1>
-            <ol><a href="http://127.0.0.1:5000/chatbot/{{ name }}">点击可与机器人聊天</a></ol>
-            {% for i in my_friend %}
-                 <h3>{{i}}</h3>
-            {% endfor %}
+    <div id="spacetitle" style="width:1200px">
+        <div id="header" style="background-color:#00BFFF;">
+            <div align="center">
+                <h1 style="margin-bottom:0;">{{ name }}的个人空间</h1>
+            </div>
+        </div>
+        <div id="menu" style="background-color:#87CEFA;height:600px;width:200px;float:left;">
+            <div align="left">
+                <h3>好友列表</h3>
+                <ul>
+                    <li>好友1</li>
+                    <li>好友2</li>
+                    <li>...</li>
+                </ul>
+               <!--{% for i in my_friend %}
+                     <h3>{{i}}</h3>
+                {% endfor %}-->
+                <ol><a href="http://127.0.0.1:5000/chatbot">点击可与机器人聊天</a></ol>
+            </div>
         </div>
 
+            <div id="content" style="background-color:#E0FFFF;height:600px;width:1000px;float:left;">
+            内容</div>
+
+            <div id="footer" style="background-color:#00CED1;clear:both;text-align:center;">
+            @</div>
     </div>
 </body>
 </html>
