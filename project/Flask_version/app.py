@@ -10,6 +10,10 @@ import tensorflow as tf
 from geventwebsocket.handler import WebSocketHandler
 from geventwebsocket.websocket import WebSocket
 from gevent.pywsgi import WSGIServer
+from seq2seq import Encoder
+from seq2seq import Decoder
+import jieba
+
 app = Flask(__name__)
 app.debug = True
 #设置secret_key防止flash消息闪现报错
@@ -99,7 +103,9 @@ def generate_text(model, start_string,num_generate = 100):
   # 评估步骤（用学习过的模型生成文本）
   # 要生成的字符个数
   # 将起始字符串转换为数字（向量化）
-    input_eval = [word_to_id[s] for s in start_string]
+
+    start_string = jieba.cut(start_string)
+    input_eval = [word_to_id.get(s, 0) for s in start_string]
     input_eval = tf.expand_dims(input_eval, 0)
   # 空字符串用于存储结果
     text_generated = []
@@ -125,11 +131,39 @@ def generate_text(model, start_string,num_generate = 100):
     return start_string + ''.join(text_generated)
 
 
+def predict(sentence):
+	for ch in "#@$%^&*():;：；{}[]'_<>-+/~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
+		sentence = sentence.replace(ch, "")
+	sentence = jieba.cut(sentence)
+	sentence = [word2id.get(word, word2id["<pad>"]) for word in sentence]
+	sentence = tf.keras.preprocessing.sequence.pad_sequences([sentence], value=word2id["<pad>"],
+															 maxlen=20, padding='post')
+	sentence = tf.convert_to_tensor(sentence)
+
+	result = ''
+	hidden = [tf.zeros((1, units))]  # 现在只输入了一个所以batch_size是1
+	encoder_output, encoder_hidden = encoder(sentence, hidden)
+
+	decoder_hidden = encoder_hidden
+	decoder_input = tf.expand_dims([word2id["<start>"]], 0)
+
+	for t in range(20):
+		predictions, decoder_hidden, attention_weights = decoder(decoder_input,
+																 decoder_hidden,
+																 encoder_output)
+		predicted_id = tf.argmax(predictions[0]).numpy()
+
+		if id2word[predicted_id] == "<end>":
+			return result
+		result += id2word[predicted_id]
+
+		decoder_input = tf.expand_dims([predicted_id], 0)
+
+	return result
+
 @app.route("/chatbot_ws/<username>")
 def chatbot_ws(username):
 	user_socket = request.environ.get("wsgi.websocket")
-	user_socket_dict[username] = user_socket
-	print(len(user_socket_dict), user_socket_dict)
 	flag = False
 	global model
 
@@ -146,15 +180,42 @@ def chatbot_ws(username):
 			msg = generate_text(model, start_string=msg, num_generate=100)
 			user_socket.send(msg)
 		else:
+			msg = predict(msg)
 			user_socket.send(msg)
 		print(msg)
 
 if __name__ == '__main__':
 	print("服务器正在运行.....")
 	model = tf.keras.models.load_model('./chatbot/AIwriter/AI_write_novel.h5')
+	#写小说的词表
 	with open("./chatbot/AIwriter/data/id2word.txt", 'r') as f:
 		id_to_word = f.read().split()
 	with open("./chatbot/AIwriter/data/word2id.json", 'r') as f:
 		word_to_id = json.load(f)
+
+	#聊天机器人的词表
+	with open("./chatbot/seq2seqchat/train/id2word.json", 'r') as f:
+		id2word = json.load(f)
+	id2word = {int(k): v for k, v in id2word.items()}
+	with open("./chatbot/seq2seqchat/train/word2id.json", 'r') as f:
+		word2id = json.load(f)
+
+	BUFFER_SIZE = 114969
+	BATCH_SIZE = 64
+	steps_per_epoch = 114969 // BATCH_SIZE
+	embedding_dim = 100
+	units = 512
+	vocab_size = len(word2id) + 1
+
+	encoder = Encoder(vocab_size, embedding_dim, units, BATCH_SIZE)
+	decoder = Decoder(vocab_size, embedding_dim, units, BATCH_SIZE)
+
+	checkpoint_dir = './chatbot/seq2seqchat/train/training_checkpoints'
+	optimizer = tf.keras.optimizers.RMSprop()
+	checkpoint = tf.train.Checkpoint(optimizer=optimizer,
+									 encoder=encoder,
+									 decoder=decoder)
+	checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
+	print("服务器地址:http://127.0.0.1:5000")
 	http_serv = WSGIServer(("127.0.0.1", 5000), app, handler_class=WebSocketHandler)
 	http_serv.serve_forever()
