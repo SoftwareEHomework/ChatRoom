@@ -3,34 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <title>个人主页</title>
+    <style>
+        #spacetitle
+        {
+            height:100%;
+            width:100%;
+        }
+        #header
+        {
+            background-color:#00BFFF;
+        }
+
+        #menu
+        {
+            background-color:#87CEFA;
+            height:800px;
+            width:200px;
+            float:left;
+            overflow : scroll;
+        }
+        #content
+        {
+            background-color:#E0FFFF;
+            height:600px;
+            width:100%;
+        }
+        #footer
+        {
+            background-color:#00CED1;
+            clear:both;
+            text-align:center;
+        }
+    </style>
 </head>
 <body>
-    <div id="spacetitle" style="width:1200px">
-        <div id="header" style="background-color:#00BFFF;">
+    <div id="spacetitle">
+        <div id="header">
             <div align="center">
                 <h1 style="margin-bottom:0;">{{ name }}的个人空间</h1>
             </div>
         </div>
-        <div id="menu" style="background-color:#87CEFA;height:600px;width:200px;float:left;">
+        <div id="menu">
             <div align="left">
                 <h3>好友列表</h3>
-                <ul>
-                    <li>好友1</li>
-                    <li>好友2</li>
-                    <li>...</li>
-                </ul>
-               <!--{% for i in my_friend %}
-                     <h3>{{i}}</h3>
-                {% endfor %}-->
+                {% for i in my_friend %}
+                    <h3><a href="http://127.0.0.1:5000/chat_with_friend/{{ name }}/{{ i }}">点此与{{i}}聊天</a></h3>
+                {% endfor %}
                 <ol><a href="http://127.0.0.1:5000/chatbot/{{ name }}">点击可与机器人聊天</a></ol>
             </div>
         </div>
 
-            <div id="content" style="background-color:#E0FFFF;height:600px;width:1000px;float:left;">
-            内容</div>
+        <div id="content">
+            <label>添加好友(在此输入待添加的好友用户名):</label><input id="friends_name" type="text">
+            <button onclick="send_message()">确定</button>
 
-            <div id="footer" style="background-color:#00CED1;clear:both;text-align:center;">
-            @</div>
+            <script type="application/javascript">
+
+                ws = new WebSocket("ws://127.0.0.1:5000/add_friends/"+ "{{ name }}");
+                ws.onmessage = function(data)
+                {
+                    if(data.data == "ok")
+                    {
+                        var ptag = document.createElement("p");
+                        ptag.innerText = "添加好友成功！";
+                        document.getElementById("content").appendChild(ptag);
+                    }
+                    else
+                    {
+                        var ptag = document.createElement("p");
+                        ptag.innerText = "添加好友失败，不存在这个人!";
+                        document.getElementById("content").appendChild(ptag);
+                    }
+                }
+
+                function send_message()
+                {
+                    var add_friends = document.getElementById("friends_name").value;
+                    ws.send(add_friends);
+                }
+            </script>
+        </div>
+
+        <div id="footer">
+        @
+        </div>
     </div>
 </body>
 </html>
