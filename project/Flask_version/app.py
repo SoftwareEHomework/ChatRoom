@@ -84,11 +84,13 @@ def login():
 			flash(u'密码错误')
 	return render_template('login.html')
 
-@app.route('/<name>')
+@app.route('/user/<name>', methods=['GET', 'POST'])
 def person(name):
 	with open("./user/user.json", 'r') as f:
 		userDict = json.load(f)
-	friend = userDict.get("friend", 0)
+	friend = userDict[name].get("friends", 0)
+	print(userDict[name])
+	print(type(userDict[name]))
 	if friend == 0:
 		my_friend = ["你当前还没有朋友"]
 	else:
@@ -103,9 +105,8 @@ def generate_text(model, start_string,num_generate = 100):
   # 评估步骤（用学习过的模型生成文本）
   # 要生成的字符个数
   # 将起始字符串转换为数字（向量化）
-
-    start_string = jieba.cut(start_string)
-    input_eval = [word_to_id.get(s, 0) for s in start_string]
+    start_string2 = jieba.cut(start_string)
+    input_eval = [word_to_id.get(s, 0) for s in start_string2]
     input_eval = tf.expand_dims(input_eval, 0)
   # 空字符串用于存储结果
     text_generated = []
@@ -121,7 +122,7 @@ def generate_text(model, start_string,num_generate = 100):
         predictions = tf.squeeze(predictions, 0)
       # 用分类分布预测模型返回的字符
         predictions = predictions / temperature
-        predicted_id = tf.random.categorical(predictions, num_samples=1)[-1,0].numpy()
+        predicted_id = tf.random.categorical(predictions, num_samples=1)[-1, 0].numpy()
 
       # 把预测字符和前面的隐藏状态一起传递给模型作为下一个输入
         input_eval = tf.expand_dims([predicted_id], 0)
@@ -130,7 +131,7 @@ def generate_text(model, start_string,num_generate = 100):
 
     return start_string + ''.join(text_generated)
 
-
+#聊天机器人生成回复的句子
 def predict(sentence):
 	for ch in "#@$%^&*():;：；{}[]'_<>-+/~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
 		sentence = sentence.replace(ch, "")
@@ -161,6 +162,7 @@ def predict(sentence):
 
 	return result
 
+#聊天机器人聊天的websocket路由
 @app.route("/chatbot_ws/<username>")
 def chatbot_ws(username):
 	user_socket = request.environ.get("wsgi.websocket")
@@ -183,6 +185,51 @@ def chatbot_ws(username):
 			msg = predict(msg)
 			user_socket.send(msg)
 		print(msg)
+
+#处理添加好友请求的路由
+@app.route('/add_friends/<name>')
+def add_friends(name):
+	user_socket = request.environ.get("wsgi.websocket")
+
+	with open('./user/user.json', 'r') as f:
+		userDict = json.load(f)
+	while True:
+		msg = user_socket.receive()
+		if userDict.get(msg, 0):
+			print("user {} 存在".format(msg))
+			#添加过好友直接append，没加过得先创建一个列表
+			if userDict[name].get("friends", 0) == 0:
+				userDict[name]["friends"] = [msg]
+			else:
+				userDict[name]["friends"].append(msg)
+
+			with open('./user/user.json', 'w') as f:
+				json.dump(userDict, f)
+			user_socket.send("ok")
+		else:
+			print("user {} 不存在".format(msg))
+			user_socket.send("no")
+
+@app.route('/chat_with_friend/<your_name>/<friend>', methods=['GET', 'POST'])
+def chat_with_friend(your_name, friend):
+	return render_template('chat_with_friend.html', your_name=your_name, friend=friend)
+
+# @app.route("/ws/<username>")
+# def ws(username):
+#     user_socket = request.environ.get("wsgi.websocket") #type:WebSocket
+#     if user_socket:
+#         user_socket_dict[username] = user_socket
+#     print(len(user_socket_dict),user_socket_dict)
+#     while 1:
+#         msg = user_socket.receive() # 收件人 消息 发件人
+#         msg_dict = json.loads(msg)
+#         msg_dict["from_user"] = username
+#         to_user = msg_dict.get("to_user")
+#         # chat = msg_dict.get("msg")
+#         u_socket = user_socket_dict.get(to_user) # type:WebSocket
+#         u_socket.send(json.dumps(msg_dict))
+
+
 
 if __name__ == '__main__':
 	print("服务器正在运行.....")
