@@ -4,6 +4,7 @@ from flask import  render_template
 from flask import request
 from flask import  flash
 from flask import  url_for
+from flask import jsonify
 import os
 import json
 import tensorflow as tf
@@ -201,7 +202,8 @@ def add_friends(name):
 			if userDict[name].get("friends", 0) == 0:
 				userDict[name]["friends"] = [msg]
 			else:
-				userDict[name]["friends"].append(msg)
+				if msg not in userDict[name]["friends"]:
+					userDict[name]["friends"].append(msg)
 
 			with open('./user/user.json', 'w') as f:
 				json.dump(userDict, f)
@@ -214,22 +216,29 @@ def add_friends(name):
 def chat_with_friend(your_name, friend):
 	return render_template('chat_with_friend.html', your_name=your_name, friend=friend)
 
-# @app.route("/ws/<username>")
-# def ws(username):
-#     user_socket = request.environ.get("wsgi.websocket") #type:WebSocket
-#     if user_socket:
-#         user_socket_dict[username] = user_socket
-#     print(len(user_socket_dict),user_socket_dict)
-#     while 1:
-#         msg = user_socket.receive() # 收件人 消息 发件人
-#         msg_dict = json.loads(msg)
-#         msg_dict["from_user"] = username
-#         to_user = msg_dict.get("to_user")
-#         # chat = msg_dict.get("msg")
-#         u_socket = user_socket_dict.get(to_user) # type:WebSocket
-#         u_socket.send(json.dumps(msg_dict))
+@app.route('/chat_with_friend_ws/<username>')
+def chat_with_friend_ws(username):
+	user_socket = request.environ.get("wsgi.websocket")
+	if user_socket:
+		user_socket_dict[username] = user_socket
+		print("有{}个用户在线,user_socket_dict:{}".format(len(user_socket_dict), user_socket_dict))
+	while True:
+		msg = user_socket.receive()
+		msg_dict = json.loads(msg)
 
+		to_friend = msg_dict["to_friend"]
+		msg_str = msg_dict["msg"]
 
+		send_dict = {}
+		if to_friend in user_socket_dict:
+			send_dict["from_user"] = username
+			send_dict["msg"] = msg_str
+			friend_socket = user_socket_dict[to_friend]
+			friend_socket.send(json.dumps(send_dict))
+		else:
+			send_dict["from_user"] = "系统提示"
+			send_dict["msg"] = "该用户暂时不在线请稍后再来"
+			user_socket.send(json.dumps(send_dict))
 
 if __name__ == '__main__':
 	print("服务器正在运行.....")

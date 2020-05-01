@@ -43,6 +43,35 @@
         <ol align="left">请输入：</ol>
         <textarea id="write" name="input_text"></textarea>
         <button onclick="send_message()">发送</button>
+
+        <script type="application/javascript">
+            ws = new WebSocket("ws://127.0.0.1:5000/chat_with_friend_ws/"+"{{ your_name }}");
+            ws.onmessage = function (data)
+            {
+<!--                解析收到的消息-->
+                var recv_msg = JSON.parse(data.data);
+<!--                显示对方发送的消息-->
+                var ptag = document.createElement("p");
+                ptag.innerText = recv_msg.from_user + ":" + recv_msg.msg;
+                document.getElementById("read").appendChild(ptag);
+            }
+            function send_message()
+            {
+                var msg = document.getElementById("write").value;
+                var friend = "{{ friend }}";
+                var send_str = {
+                    "to_friend" : friend,
+                    "msg" : msg
+                }
+                ws.send(JSON.stringify(send_str))
+
+                <!--                显示你发送的消息-->
+                var ptag = document.createElement("p");
+                ptag.innerText = "{{ your_name }}" + ":" + document.getElementById("write").value;
+                document.getElementById("read").appendChild(ptag);
+            }
+        </script>
+
     </div>
 </body>
 </html>
