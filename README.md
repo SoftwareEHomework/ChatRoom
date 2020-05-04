@@ -7,6 +7,8 @@
 推荐使用anaconda进行包管理，在anaconda里创建新的虚拟环境，然后使用清华镜像源安装所有依赖的第三方库 <br>
 <pre>
     <code>
+          //创建虚拟环境
+          conda create -n 你的虚拟环境名称 python=3.6
           //进入虚拟环境
           activate 虚拟环境名称 
           //使用清华源安装依赖库(cmd命令行中安装)
